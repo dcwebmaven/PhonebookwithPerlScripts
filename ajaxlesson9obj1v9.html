@@ -1,0 +1,156 @@
+<html>
+<head>
+<script type="text/javascript">
+
+function createRequestObject() {
+     var ro
+     var browser = navigator.appName
+     if(browser == "Microsoft Internet Explorer"){
+         ro = new ActiveXObject("Microsoft.XMLHTTP")
+     }else{
+         ro = new XMLHttpRequest()
+     }
+     return ro
+}
+
+var http = createRequestObject()
+
+function sndReq(action) {
+    http.open('get', 'cgi/ajaxphoneread.pl?firstname='+action, true)
+    http.onreadystatechange = handleResponse
+    http.send(null)
+
+}
+
+function sndWrite() {
+
+    var entryFirst=document.getElementById("entryFirst").value
+    var entryLast=document.getElementById("entryLast").value
+    var entryAddress=document.getElementById("entryAddress").value
+    var entryPhone=document.getElementById("entryPhone").value
+    var entryEmail=document.getElementById("entryEmail").value
+    var apos=entryEmail.indexOf("@")
+    var dotpos=entryEmail.lastIndexOf(".")
+
+    if (entryFirst == "" || entryFirst.match(/[^a-zA-Z]/)){
+        alert("Please enter a First Name.  Be sure that the name contains only letters.")
+    }
+    
+    else if (entryLast == "" || entryLast.match(/[^a-zA-Z]/)){
+        alert("Please enter a Last Name.  Be sure that the name contains only letters.")
+    }
+
+    else if (entryPhone == "" || entryPhone.match(/[^0-9]/)){
+        alert("Please enter a Phone Number. Only digits are allowed.")
+    }
+
+     
+    else if (!(entryPhone.length == 7 || entryPhone.length == 10)) {
+        alert("Phone number must be 7 or 10 digits in length.")
+    }
+
+    else if(apos<1 || dotpos-apos<2) {
+        alert("Please be sure the email address uses the format name@domain.com")
+    }
+    
+    else {
+         if(entryPhone.length == 7) {
+       entryPhone='202'+entryPhone
+       }
+    entryFirst=escape(entryFirst)
+    entryLast=escape(entryLast)
+    entryAddress=escape(entryAddress)
+    entryPhone=escape(entryPhone)
+    entryEmail=escape(entryEmail)
+
+    var firstString='entryFirst='+entryFirst
+    var lastString='entryLast='+entryLast
+    var addressString='entryAddress='+entryAddress
+    var phoneString='entryPhone='+entryPhone
+    var emailString='entryEmail='+entryEmail
+
+    var sendString=firstString+'&'+lastString+'&'+addressString+'&'+phoneString+'&'+emailString
+
+    http.open('post', 'cgi/ajaxphonewrite.pl');
+    http.send(sendString);
+            }
+}
+
+function handleResponse() {
+
+    if(http.readyState == 4) {
+
+     var response = http.responseText;
+     var update = new Array()
+
+     if(response.indexOf('|')) {
+         update = response.split('|')
+
+     document.getElementById('firstName').innerHTML = document.getElementById('first').value
+     document.getElementById('lastName').innerHTML = update[0]
+     document.getElementById('address').innerHTML = update[1]
+     document.getElementById('phone').innerHTML = update[2]
+     document.getElementById('email').innerHTML = update[3]
+
+     }
+
+  }
+
+}
+
+</script>
+</head>
+
+<body>
+<form id="addEntry">
+   <table>
+      <tr>
+         <td align="right">First Name:</td>
+         <td><input type="text" id="entryFirst" /></td>
+      </tr>
+      <tr>
+         <td align="right">Last Name:</td>
+         <td><input type="text" id="entryLast" /></td>
+      </tr>
+      <tr>
+          <td align="right">Address:</td>
+          <td><input type="text" id="entryAddress"/></td>
+      </tr>
+      <tr>
+          <td align="right">Phone:</td>
+          <td><input type="text" id="entryPhone"/></td>
+      </tr>
+      <tr>
+          <td align="right">Email:</td>
+          <td><input type="text" id="entryEmail"/></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="button" value="Send Entry" onClick="sndWrite()"/></td>
+      </tr>
+    </table>
+   </form>
+<br/><br/><br/><br/>
+
+   <form id="search">
+       <table>
+          <tr>
+            <td align="right"><input type="text" id="first"/></td>
+            <td><input type="button" value="Search Phonebook"
+                           onClick="sndReq(document.getElementById('first').value)"/></td>
+          </tr>
+       </table>
+    </form>
+
+   <div id="firstName"></div>
+   <div id="lastName"></div>
+   <div id="address"></div>
+   <div id="phone"></div>
+   <div id="email"></div>
+
+</body>
+</html>
+
+
+
+
